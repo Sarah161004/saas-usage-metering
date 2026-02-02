@@ -29,7 +29,7 @@ It focuses on API-key based access, metered usage logs, and a dashboard that sho
 
 ## Project Structure (high-level)
 
-Typical structure (may vary slightly in this repo):
+Typical structure:
 
 - `frontend/` – Next.js app for dashboard, login, users, usage and billing pages.
 - `backend/` – NestJS app exposing secured endpoints and handling usage logging.
