@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// 1. Top of schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  password  String?
+  planSlug  String? // Hashed with bcrypt
+  plan      Plan?      @relation(fields: [planSlug], references: [slug])
+  apiKeys   ApiKey[]
+  usageLogs UsageLog[]
+  alerts    Alert[]
+  invoices  Invoice[]
+  role      UserRole   @default(USER)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model Plan {
+  id               String   @id @default(cuid())
+  name             String   @unique
+  slug             String   @unique
+  //Max requests per user per calendar month
+  requestsPerMonth Int
+  softLimitPercent Int      @default(80)
+  priceMonthly     Decimal
+  users            User[]
+  createdAt        DateTime @default(now())
+}
+
+model ApiKey {
+  id         String     @id @default(cuid())
+  keyHash    String     @unique
+  userId     String
+  user       User       @relation(fields: [userId], references: [id])
+  revoked    Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  lastUsedAt DateTime?
+  usageLogs  UsageLog[]
+}
+
+model UsageLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  apiKeyId  String?
+  apiKey    ApiKey?  @relation(fields: [apiKeyId], references: [id])
+  endpoint  String
+  method    String
+  timestamp DateTime @default(now())
+  month     String
+
+  @@index([userId, month])
+  @@index([timestamp])
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  periodStart   DateTime
+  periodEnd     DateTime
+  totalRequests Int
+  amount        Decimal
+  createdAt     DateTime @default(now())
+}
+
+model Alert {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  threshold   Int
+  type        AlertType
+  triggeredAt DateTime  @default(now())
+  message     String
+  month       String   
+}
+
+enum AlertType {
+  SOFT_LIMIT
+  HARD_LIMIT
+  OVERAGE
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
