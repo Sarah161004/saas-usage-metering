@@ -10,7 +10,6 @@ It focuses on API-key based access, metered usage logs, and a dashboard that sho
 - Usage logging: every valid API call is recorded in a `UsageLog` table in PostgreSQL via Prisma.
 - Plans & limits (WIP): models for plans and limits to support soft/hard usage caps per user.
 - Usage & billing dashboard: Next.js dashboard pages to see users, usage, and estimated billing information.
-- Admin views (WIP): admin pages for viewing aggregated usage and debugging API-key based access.
 
 ## Tech Stack
 
